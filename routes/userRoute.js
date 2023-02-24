@@ -1,16 +1,17 @@
 const express = require("express");
 const router = express.Router();
+const User = require("../model/User");
 
 router.get("/", (req, res) => {
-  res.json("Hello from server....");
+  res.send("Getting user");
 });
 
 router.post("/register", (req, res) => {
-  res.json("Hello from server");
+  res.send("Registering...");
 });
 
-router.post("/login", (req, res) => {
-  res.json("Hello from server");
+router.post("/login", async (req, res) => {
+  res.send("Logging in...");
 });
 
 module.exports = router;
