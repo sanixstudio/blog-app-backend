@@ -17,8 +17,10 @@ router.get("/", (req, res) => {
 router.post("/register", async (req, res) => {
   const { username, password } = req.body;
 
+  console.log(username, password);
+
   if (!username || !password) {
-    res.status(400).json("Please complete the form");
+    res.status(400).json({ message: "Please complete the form" });
   } else {
     try {
       const newUser = await User.create({
@@ -47,15 +49,10 @@ router.post("/login", async (req, res) => {
       } else {
         const isPassOk = bcrypt.compare(password, userDoc.password);
         if (isPassOk) {
-          jwt.sign(
-            { username, id: userDoc._id },
-            "secret",
-            {},
-            (err, token) => {
-              if (err) throw err;
-              res.status(200).json(token);
-            }
-          );
+          jwt.sign({ username, id: userDoc._id }, secret, {}, (err, token) => {
+            if (err) throw err;
+            res.cookie("token", token).json("ok");
+          });
         }
       }
     } catch (error) {
