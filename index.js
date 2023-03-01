@@ -4,7 +4,7 @@ const morgan = require("morgan");
 const app = express();
 require("dotenv").config();
 
-app.use(cors());
+app.use(cors({ credentials: true, origin: "http://localhost:5173" }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan("common"));
