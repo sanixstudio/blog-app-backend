@@ -37,27 +37,32 @@ router.post("/register", async (req, res) => {
 // LOGIN
 router.post("/login", async (req, res) => {
   const { username, password } = req.body;
-  if (!username || !password)
+  if (!username || !password) {
     res.status(401).json({ message: "Please complete the form" });
-  else
-    try {
-      const userDoc = await User.findOne({
-        username,
-      });
-      if (!userDoc) {
-        res.status(400).json({ message: "User not found" });
-      } else {
-        const isPassOk = bcrypt.compare(password, userDoc.password);
-        if (isPassOk) {
-          jwt.sign({ username, id: userDoc._id }, secret, {}, (err, token) => {
-            if (err) throw err;
-            res.cookie("token", token).json("ok");
-          });
-        }
-      }
-    } catch (error) {
-      res.status(400).json({ message: error.message });
+    return;
+  }
+
+  try {
+    const userDoc = await User.findOne({ username });
+
+    if (!userDoc) {
+      res.status(400).json({ message: "User not found" });
+      return;
     }
+
+    const isPassOk = await bcrypt.compare(password, userDoc.password);
+
+    if (isPassOk) {
+      jwt.sign({ username, id: userDoc._id }, secret, {}, (err, token) => {
+        if (err) throw err;
+        res.cookie("token", token).json("ok");
+      });
+    } else {
+      res.status(400).json({ message: "Invalid password" });
+    }
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
 });
 
 module.exports = router;
