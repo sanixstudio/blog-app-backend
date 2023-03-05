@@ -58,12 +58,13 @@ router.post(
   body("password").notEmpty().withMessage("Please fill out the form"),
   async (req, res) => {
     const { username, password } = req.body;
-    if (!username || !password) {
-      res.status(401).json({ message: "Please complete the form" });
-      return;
-    }
+    const errors = validationResult(req);
 
     try {
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+      }
+
       const userDoc = await User.findOne({ username });
 
       if (!userDoc) {
