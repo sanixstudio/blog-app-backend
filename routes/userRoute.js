@@ -1,14 +1,11 @@
 const express = require("express");
 const { body, validationResult } = require("express-validator");
 const router = express.Router();
-const User = require("../model/User");
+const User = require("../models/User");
 
 const jwt = require("jsonwebtoken");
-const secret = "some_Sort@ofString&";
-
 const bcrypt = require("bcrypt");
 const saltRounds = 10;
-const salt = bcrypt.genSaltSync(saltRounds);
 
 router.get("/", (req, res) => {
   res.send("Getting user");
@@ -17,20 +14,22 @@ router.get("/", (req, res) => {
 // REGISTER
 router.post(
   "/register",
-  body("username")
-    .notEmpty()
-    .withMessage("Please fill out the form")
-    .isLength({ min: 3, max: 16 })
-    .withMessage(
-      "username must be at least 3 characters long and max 16 characters"
-    ),
-  body("password")
-    .notEmpty()
-    .withMessage("Please fill out the form")
-    .isLength({ min: 3, max: 64 })
-    .withMessage(
-      "username must be at least 3 characters long and max 24 characters"
-    ),
+  [
+    body("username")
+      .notEmpty()
+      .withMessage("Please fill out the form")
+      .isLength({ min: 3, max: 16 })
+      .withMessage(
+        "username must be at least 3 characters long and max 16 characters"
+      ),
+    body("password")
+      .notEmpty()
+      .withMessage("Please fill out the form")
+      .isLength({ min: 3, max: 64 })
+      .withMessage(
+        "password must be at least 3 characters long and max 64 characters"
+      ),
+  ],
   async (req, res) => {
     const { username, password } = req.body;
     const errors = validationResult(req);
@@ -40,13 +39,35 @@ router.post(
         return res.status(400).json({ errors: errors.array() });
       }
 
+      let userExists = await User.findOne({ username });
+      if (userExists) {
+        return res.status(400).json({ message: "Username is already taken" });
+      }
+
+      const hashedPassword = await bcrypt.hash(password, saltRounds);
+
       const newUser = await User.create({
         username,
-        password: bcrypt.hashSync(password, salt),
+        password: hashedPassword,
       });
-      res.status(200).json(newUser);
+
+      const payload = {
+        user: {
+          id: newUser._id,
+        },
+      };
+
+      jwt.sign(
+        payload,
+        process.env.JWT_SECRET,
+        { expiresIn: 604800 }, // Token expires in 7 days
+        (err, token) => {
+          if (err) throw err;
+          res.status(201).json({ token: token, user: newUser.username });
+        }
+      );
     } catch (error) {
-      res.status(400).json(error.message);
+      res.status(500).json({ message: error.message });
     }
   }
 );
@@ -54,8 +75,10 @@ router.post(
 // LOGIN
 router.post(
   "/login",
-  body("username").notEmpty().withMessage("Please fill out the form"),
-  body("password").notEmpty().withMessage("Please fill out the form"),
+  [
+    body("username").notEmpty().withMessage("Please fill out the form"),
+    body("password").notEmpty().withMessage("Please fill out the form"),
+  ],
   async (req, res) => {
     const { username, password } = req.body;
     const errors = validationResult(req);
@@ -68,22 +91,32 @@ router.post(
       const userDoc = await User.findOne({ username });
 
       if (!userDoc) {
-        res.status(400).json({ message: "User not found" });
-        return;
+        return res.status(400).json({ message: "User not found" });
       }
 
       const isPassOk = await bcrypt.compare(password, userDoc.password);
 
+      const payload = {
+        user: {
+          id: userDoc._id,
+        },
+      };
+
       if (isPassOk) {
-        jwt.sign({ username, id: userDoc._id }, secret, {}, (err, token) => {
-          if (err) throw err;
-          res.cookie("token", token).json("ok");
-        });
+        jwt.sign(
+          payload,
+          process.env.JWT_SECRET,
+          { expiresIn: 604800 }, // Token expires in 7 days
+          (err, token) => {
+            if (err) throw err;
+            res.status(201).json({ token: token, user: userDoc.username });
+          }
+        );
       } else {
         res.status(400).json({ message: "Invalid password" });
       }
     } catch (error) {
-      res.status(400).json({ message: error.message });
+      res.status(500).json({ message: error.message });
     }
   }
 );
