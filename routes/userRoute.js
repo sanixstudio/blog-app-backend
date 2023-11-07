@@ -2,6 +2,7 @@ const express = require("express");
 const { body, validationResult } = require("express-validator");
 const router = express.Router();
 const User = require("../models/User");
+const createSecretToken = require("../utils/secretToken");
 
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
@@ -57,15 +58,10 @@ router.post(
         },
       };
 
-      jwt.sign(
-        payload,
-        process.env.JWT_SECRET,
-        { expiresIn: 604800 }, // Token expires in 7 days
-        (err, token) => {
-          if (err) throw err;
-          res.status(201).json({ token: token, user: newUser.username });
-        }
-      );
+      const token = createSecretToken(payload);
+      res
+        .status(201)
+        .json({ token, user: { name: newUser.username, id: newUser._id } });
     } catch (error) {
       res.status(500).json({ message: error.message });
     }
@@ -103,15 +99,10 @@ router.post(
       };
 
       if (isPassOk) {
-        jwt.sign(
-          payload,
-          process.env.JWT_SECRET,
-          { expiresIn: 604800 }, // Token expires in 7 days
-          (err, token) => {
-            if (err) throw err;
-            res.status(201).json({ token: token, user: userDoc.username });
-          }
-        );
+        const token = createSecretToken(payload);
+        res
+          .status(201)
+          .json({ token, user: { id: userDoc._id, name: userDoc.username } });
       } else {
         res.status(400).json({ message: "Invalid password" });
       }

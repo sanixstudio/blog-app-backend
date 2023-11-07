@@ -8,7 +8,7 @@ const authenticate = require("../middleware/authenticate");
 // GET ALL POSTS
 router.get("/posts", async (req, res, next) => {
   try {
-    const posts = await Post.find().populate("author", "username");
+    const posts = await Post.find().populate("author", "_id");
     res.json(posts);
   } catch (err) {
     next(err);
@@ -18,10 +18,7 @@ router.get("/posts", async (req, res, next) => {
 // GET SINGLE POST
 router.get("/posts/:id", async (req, res, next) => {
   try {
-    const post = await Post.findById(req.params.id).populate(
-      "author",
-      "username"
-    );
+    const post = await Post.findById(req.params.id).populate("author");
     if (!post) {
       return res.status(404).json({ message: "Post not found" });
     }
@@ -35,11 +32,10 @@ router.get("/posts/:id", async (req, res, next) => {
 // Assuming route is protected and `req.user` contains the authenticated user's information
 router.post("/posts", authenticate, async (req, res, next) => {
   try {
-    const userId = req.user.id;
     const newPost = new Post({
       title: req.body.title,
       body: req.body.body,
-      author: userId, // Set the author to the authenticated user
+      author: req.body.userId, // Set the author to the authenticated user
     });
     console.log(newPost);
     const post = await newPost.save();
