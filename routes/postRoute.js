@@ -8,7 +8,7 @@ const authenticate = require("../middleware/authenticate");
 // GET ALL POSTS
 router.get("/posts", async (req, res, next) => {
   try {
-    const posts = await Post.find().populate("author", "_id");
+    const posts = await Post.find().populate("author", "username");
     res.json(posts);
   } catch (err) {
     next(err);
@@ -18,7 +18,10 @@ router.get("/posts", async (req, res, next) => {
 // GET SINGLE POST
 router.get("/posts/:id", async (req, res, next) => {
   try {
-    const post = await Post.findById(req.params.id).populate("author");
+    const post = await Post.findById(req.params.id).populate(
+      "author",
+      "username"
+    );
     if (!post) {
       return res.status(404).json({ message: "Post not found" });
     }
