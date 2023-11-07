@@ -40,7 +40,6 @@ router.post("/posts", authenticate, async (req, res, next) => {
       body: req.body.body,
       author: req.body.userId, // Set the author to the authenticated user
     });
-    console.log(newPost);
     const post = await newPost.save();
     res.status(201).json(post);
   } catch (err) {
@@ -59,7 +58,7 @@ router.put("/posts/:id", authenticate, async (req, res, next) => {
     if (!post) {
       return res.status(404).json({ message: "Post not found" });
     }
-    res.json(post);
+    res.status(201).json(post);
   } catch (err) {
     next(err);
   }
@@ -72,7 +71,7 @@ router.delete("/posts/:id", authenticate, async (req, res, next) => {
     if (!post) {
       return res.status(404).json({ message: "Post not found" });
     }
-    res.status(200).json({ message: "Post deleted successfully" });
+    res.status(201).json({ message: "Post deleted successfully" });
   } catch (err) {
     next(err);
   }
