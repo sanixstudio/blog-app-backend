@@ -2,7 +2,6 @@ const express = require("express");
 const router = express.Router();
 const Post = require("../models/Post");
 
-//TODO: Add protecting for routes
 const authenticate = require("../middleware/authenticate");
 
 // GET ALL POSTS
@@ -31,7 +30,7 @@ router.get("/posts/:id", async (req, res, next) => {
   }
 });
 
-// GET ALL POSTS FOR LOGGED-IN USER ONLY
+// GET ALL POSTS FOR AUTHOR ONLY
 router.get("/posts/user-posts/:id", authenticate, async (req, res, next) => {
   try {
     const userId = req.params.id;
