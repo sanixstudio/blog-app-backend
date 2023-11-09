@@ -31,8 +31,22 @@ router.get("/posts/:id", async (req, res, next) => {
   }
 });
 
+// GET ALL POSTS FOR LOGGED-IN USER ONLY
+router.get("/posts/user-posts/:id", authenticate, async (req, res, next) => {
+  try {
+    const userId = req.params.id;
+    const posts = await Post.find({ author: userId }).populate(
+      "author",
+      "username"
+    );
+
+    res.json(posts);
+  } catch (err) {
+    next(err);
+  }
+});
+
 // CREATE POST
-// Assuming route is protected and `req.user` contains the authenticated user's information
 router.post("/posts", authenticate, async (req, res, next) => {
   try {
     const newPost = new Post({
