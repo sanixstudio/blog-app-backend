@@ -9,7 +9,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan("common"));
 
-const mongoose = require('./config/db_connection')
+const mongoose = require("./config/db_connection");
 
 const db = mongoose.connection;
 db.on("error", () => console.log("Connection Error: "));

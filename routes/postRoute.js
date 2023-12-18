@@ -3,6 +3,7 @@ const router = express.Router();
 const Post = require("../models/Post");
 
 const authenticate = require("../middleware/authenticate");
+const upload = require("../middleware/multer");
 
 // GET ALL POSTS
 router.get("/posts", async (req, res, next) => {
@@ -46,19 +47,38 @@ router.get("/posts/user-posts/:id", authenticate, async (req, res, next) => {
 });
 
 // CREATE POST
-router.post("/posts", authenticate, async (req, res, next) => {
-  try {
-    const newPost = new Post({
-      title: req.body.title,
-      body: req.body.body,
-      author: req.body.userId, // Set the author to the authenticated user
-    });
-    const post = await newPost.save();
-    res.status(201).json(post);
-  } catch (err) {
-    next(err);
+router.post(
+  "/posts",
+  authenticate,
+  upload.single("image"),
+  async (req, res, next) => {
+    try {
+      const newPost = new Post({
+        title: req.body.title,
+        body: req.body.body,
+        author: req.body.userId, // Set the author to the authenticated user
+      });
+
+      // Handle the image upload if a file was provided
+      if (req.file) {
+        newPost.image = {
+          name: req.file.originalname,
+          img: {
+            data: req.file.buffer,
+            contentType: req.file.mimetype,
+          },
+        };
+      }
+
+      console.log(newPost.image);
+
+      const post = await newPost.save();
+      res.status(201).json(post);
+    } catch (err) {
+      next(err);
+    }
   }
-});
+);
 
 // UPDATE POST
 router.put("/posts/:id", authenticate, async (req, res, next) => {

@@ -12,9 +12,16 @@ const postSchema = new Schema({
     required: true,
   },
   author: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: Schema.Types.ObjectId,
     ref: "User",
     required: true,
+  },
+  image: {
+    name: String,
+    img: {
+      data: Buffer,
+      contentType: String,
+    },
   },
   timestamp: {
     type: Date,
@@ -23,5 +30,4 @@ const postSchema = new Schema({
 });
 
 const Post = mongoose.model("Post", postSchema);
-
 module.exports = Post;
