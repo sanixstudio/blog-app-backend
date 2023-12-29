@@ -14,6 +14,9 @@ const UserSchema = new mongoose.Schema({
     min: 3,
     max: 32,
   },
+  photo: {
+    url: String,
+  },
 });
 
 module.exports = mongoose.model("User", UserSchema);

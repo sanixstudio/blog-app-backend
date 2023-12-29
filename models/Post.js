@@ -17,11 +17,7 @@ const postSchema = new Schema({
     required: true,
   },
   image: {
-    name: String,
-    img: {
-      data: Buffer,
-      contentType: String,
-    },
+    url: String,
   },
   timestamp: {
     type: Date,

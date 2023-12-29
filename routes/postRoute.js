@@ -1,6 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const Post = require("../models/Post");
+const cloudinary = require("../config/cloudinary");
+const streamifier = require("streamifier");
 
 const authenticate = require("../middleware/authenticate");
 const upload = require("../middleware/multer");
@@ -56,24 +58,44 @@ router.post(
       const newPost = new Post({
         title: req.body.title,
         body: req.body.body,
-        author: req.body.userId, // Set the author to the authenticated user
+        author: req.body.userId,
       });
 
       // Handle the image upload if a file was provided
       if (req.file) {
-        newPost.image = {
-          name: req.file.originalname,
-          img: {
-            data: req.file.buffer,
-            contentType: req.file.mimetype,
-          },
-        };
+        const imageStream = streamifier.createReadStream(req.file.buffer);
+
+        // Upload the image to Cloudinary using a stream
+        const cloudinaryUploadStream = cloudinary.uploader.upload_stream(
+          (error, result) => {
+            if (error) {
+              return res.status(500).json({ error: "Image upload failed" });
+            }
+
+            // Save the public URL of the Cloudinary image to your Post schema
+            newPost.image = {
+              url: result.secure_url, // Retrieve the public URL from Cloudinary's response
+            };
+
+            // Save the new post with the image URL to the database
+            newPost.save((err, post) => {
+              if (err) {
+                return res
+                  .status(500)
+                  .json({ error: "Failed to save post with image" });
+              }
+              res.status(201).json(post);
+            });
+          }
+        );
+
+        // Pipe the imageStream to the Cloudinary upload stream
+        imageStream.pipe(cloudinaryUploadStream);
+      } else {
+        // If no image was uploaded, save the post without an image URL
+        const post = await newPost.save();
+        res.status(201).json(post);
       }
-
-      console.log(newPost.image);
-
-      const post = await newPost.save();
-      res.status(201).json(post);
     } catch (err) {
       next(err);
     }
