@@ -10,7 +10,7 @@ app.use(
     origin: [
       "http://localhost:5173",
       "http://localhost:5174",
-      "https://smash-blog.onrender.com/",
+      "https://smash-blog.onrender.com",
     ],
   })
 );
