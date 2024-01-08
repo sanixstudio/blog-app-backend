@@ -7,7 +7,11 @@ require("dotenv").config();
 app.use(
   cors({
     credentials: true,
-    origin: "https://smash-blog.onrender.com",
+    origin: [
+      "http://localhost:5173",
+      "https://smash-blog.onrender.com",
+      "https://smash-blog-be.onrender.com",
+    ],
   })
 );
 app.use(express.json());
