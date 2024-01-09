@@ -12,7 +12,7 @@ app.use(
       "https://smash-blog.onrender.com",
       "https://smash-blog-be.onrender.com",
       "https://blog-app-rho-blue.vercel.app",
-      "https://smash-blog.vercel.app/",
+      "https://smash-blog.vercel.app",
       "https://blog-app-backend-production-14d8.up.railway.app",
     ],
   })
