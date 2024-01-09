@@ -11,7 +11,8 @@ app.use(
       "http://localhost:5173",
       "https://smash-blog.onrender.com",
       "https://smash-blog-be.onrender.com",
-      "https://blog-app-rho-blue.vercel.app/",
+      "https://blog-app-rho-blue.vercel.app",
+      "https://blog-app-backend-production-14d8.up.railway.app",
     ],
   })
 );
